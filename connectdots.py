@@ -1,43 +1,52 @@
 import argparse
+import logging
 from svgpathtools import (
     svg2paths,
     wsvg,
 )
 import svgwrite
 
+
 s_prefix = 'svg_'
 connect_prefix = 'connect_'
 if __name__ == '__main__':
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('svg_file')
     
     args = parser.parse_args()
-    scale = 10
+    scale = 3
     dwg = svgwrite.Drawing(connect_prefix+args.svg_file, size=(1700,1700))
+    logging.info("getting paths...")
     paths, attributes = svg2paths(args.svg_file)
+    logging.info("done!")
+    logging.info("Number of paths: {}".format(len(paths)))
     i = 0
     point_to_int = {}
     for path in paths:
        for line in path:
-           if i == 23 or i == 0:
-               print line
-               print point_to_int
-               print line.start not in point_to_int
-               print line.end not in point_to_int
-           if line.start not in point_to_int:
-               point_to_int[line.start] = i
-               i+=1
-           if line.end not in point_to_int:
-               point_to_int[line.end] = i
-               i+=1
-    for point, val in point_to_int.items():
-        x = scale*point.real
-        y = scale*point.imag
-        dwg.add(dwg.text(str(val), insert=(x,y), fill='black'))
+           for point in [line.start, line.end]:
+               x = int(point.real)
+               y = int(point.imag)
+               if (x,y) not in point_to_int:
+                   point_to_int[(x,y)] = i
+                   i+=1
+    for (x,y), val in point_to_int.items():
+        x *= scale
+        y *= scale
+        dwg.add(dwg.text(str(val), insert=(x+3,y+3), fill='black'))
         dwg.add(dwg.circle(r=3,center=(x,y), fill='blue'))
 
     dwg.save()
-
-    wsvg(paths, attributes=attributes, filename=s_prefix+args.svg_file)
-    
-    
+    # Try to actually draw it 
+    inverted = {v: k for k,v in point_to_int.items()}
+    logging.debug(sorted(inverted))
+    drew = svgwrite.Drawing('post_'+args.svg_file, size=(1700,1700))
+    stroke=svgwrite.rgb(10, 10, 16, '%')
+    for j in sorted(inverted):
+       logging.debug(inverted[j])
+       try:
+           drew.add(drew.line(inverted[j-1], inverted[j], stroke=stroke))
+       except KeyError:
+           drew.add(drew.line(inverted[j], inverted[i-1], stroke=stroke))
+    drew.save()
