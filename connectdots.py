@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 from svgpathtools import (
     svg2paths,
@@ -9,11 +10,12 @@ import svgwrite
 
 s_prefix = 'svg_'
 connect_prefix = 'connect_'
+json_prefix = 'json_'
 if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('svg_file')
-    
+
     args = parser.parse_args()
     scale = 3
     dwg = svgwrite.Drawing(connect_prefix+args.svg_file, size=(1700,1700))
@@ -38,7 +40,7 @@ if __name__ == '__main__':
         dwg.add(dwg.circle(r=3,center=(x,y), fill='blue'))
 
     dwg.save()
-    # Try to actually draw it 
+    # Try to actually draw it
     inverted = {v: k for k,v in point_to_int.items()}
     logging.debug(sorted(inverted))
     drew = svgwrite.Drawing('post_'+args.svg_file, size=(1700,1700))
@@ -50,3 +52,6 @@ if __name__ == '__main__':
        except KeyError:
            drew.add(drew.line(inverted[j], inverted[i-1], stroke=stroke))
     drew.save()
+
+    with open(json_prefix+args.svg_file, 'w') as outfile:
+        json.dump(point_to_int.keys(), outfile)
