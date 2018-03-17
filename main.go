@@ -51,12 +51,15 @@ func (v Vgraph) Points() []Point {
 
   */
 func tsp_helper(points []Point) ([]Point, float64) {
+  if len(points) == 1 {
+     return points, 0
+  }
   min := math.MaxFloat64
   var min_path []Point
-  for i, point := range points[1:] {
-    fmt.Printf("before append")
-    target_points := append(points[1:i], points[i+1:]...)
-    fmt.Printf("after append")
+  fmt.Printf("%+v", points)
+  rest := points[1:]
+  for i, point := range rest {
+    target_points := append(rest[0:i], points[i+1:]...)
     path, length := tsp_helper(target_points)
     // Pretty sure we need to find the best place to put this point, doesn't
     // make sense to put it in the beginning... TODO!
@@ -69,7 +72,7 @@ func tsp_helper(points []Point) ([]Point, float64) {
   return min_path, min
 }
 func (p Point) Distance (q Point) float64 {
-  return math.Sqrt(math.Pow(math.Abs(float64(p.x - q.x)),2)+ math.Pow(math.Abs(float64(p.x - q.x)), 2))
+  return math.Sqrt(math.Pow(math.Abs(float64(p.x - q.x)),2) + math.Pow(math.Abs(float64(p.x - q.x)), 2))
 }
 func main() {
 
@@ -83,6 +86,7 @@ func main() {
   err = json.Unmarshal(points_corpus, &points)
   fmt.Printf("%+v", points)
   vgraph := newGraph(points)
+  fmt.Printf("%+v", vgraph.Points())
   tsp := vgraph.Tsp()
   fmt.Printf("%+v", tsp)
 }
