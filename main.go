@@ -181,6 +181,9 @@ func Sum(x int, y int) int {
 
   */
 func tsp_helper(points []Point) ([]Point, float64) {
+  if len(points) == 1 {
+     return points, 0
+  }
   min := math.MaxFloat64
   var min_path []Point
   for i, point := range points[1:] {
@@ -199,7 +202,7 @@ func tsp_helper(points []Point) ([]Point, float64) {
   return min_path, min
 }
 func (p Point) Distance (q Point) float64 {
-  return math.Sqrt(math.Pow(math.Abs(float64(p.x - q.x)),2)+ math.Pow(math.Abs(float64(p.x - q.x)), 2))
+  return math.Sqrt(math.Pow(math.Abs(float64(p.x - q.x)),2) + math.Pow(math.Abs(float64(p.x - q.x)), 2))
 }
 func main() {
 
